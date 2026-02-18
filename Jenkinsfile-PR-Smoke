@@ -50,10 +50,10 @@ pipeline {
                 echo "🔥 Running: Smoke tests on QA environment"
                 bat """
                     mvn clean verify \
-                        -Dgroups=${env.TEST_SUITE} \
-                        -Denv=${env.ENVIRONMENT} \
-                        -Dbrowser=${env.BROWSER} \
-                        -Dheadless=${env.HEADLESS}
+                        -Dgroups=${env.TEST_SUITE} ^
+                        -Denv=${env.ENVIRONMENT} ^
+                        -Dbrowser=${env.BROWSER} ^
+                        -Dheadless=${env.HEADLESS} ^
                         -Preport
                 """
             }
@@ -74,6 +74,9 @@ pipeline {
             echo "❌ Smoke tests failed - PR is blocked"
         }
         always {
+            allure([
+            results: [[path: 'target/allure-results']]
+            ])
             cleanWs()
         }
     }
