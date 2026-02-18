@@ -1,0 +1,106 @@
+# ============================================
+# Maven Build Output
+# ============================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# ============================================
+# Allure Reports (Generated at runtime)
+# ============================================
+allure-results/
+allure-report/
+.allure/
+
+# ============================================
+# Screenshots (if saved to disk)
+# ============================================
+screenshots/
+*.png
+*.jpg
+
+# ============================================
+# Prod and Staging config files
+# ============================================
+config-prod.properties
+config-staging.properties
+
+# ============================================
+# Test Results & Logs
+# ============================================
+test-output/
+surefire-reports/
+*.log
+logs/
+
+# ============================================
+# IDE Files
+# ============================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/
+build/
+nbbuild/
+dist/
+nbdist/
+
+# ============================================
+# OS Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ============================================
+# Sensitive Config (DO NOT COMMIT)
+# ============================================
+# Uncomment if you have sensitive credentials
+# config-prod.properties
+# .env
+# secrets.properties
+
+# ============================================
+# Playwright
+# ============================================
+playwright-report/
+test-results/
+.playwright/
+
+# ============================================
+# Docker
+# ============================================
+docker-compose.override.yml
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.bak
+*.swp
