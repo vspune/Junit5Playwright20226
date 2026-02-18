@@ -119,6 +119,8 @@ public class LoginTest extends BaseTest {
 
         HomePage home = new HomePage(page);
         home.isLoaded();
+        home.searchisdisplayed();
+
     }
 }
 
