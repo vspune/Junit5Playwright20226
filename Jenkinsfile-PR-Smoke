@@ -12,7 +12,7 @@ pipeline {
     }
     
     environment {
-        TEST_SUITE = 'smoke'      // WHICH: Only smoke tests
+        TEST_SUITE = 'Smoke'      // WHICH: Only smoke tests
         ENVIRONMENT = 'qa'         // WHERE: QA environment
         BROWSER = 'chromium'
         HEADLESS = 'true'
