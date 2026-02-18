@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven-3.9'
+        jdk 'JDK-11'
+    }
+    
+    triggers {
+        // ✅ WHEN: Runs automatically when developer pushes code
+        githubPush()
+    }
+    
+    environment {
+        TEST_SUITE = 'smoke'      // WHICH: Only smoke tests
+        ENVIRONMENT = 'qa'         // WHERE: QA environment
+        BROWSER = 'chromium'
+        HEADLESS = 'true'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "📦 Developer pushed code - Running smoke tests on QA..."
+                checkout scm
+            }
+        }
+        
+        stage('Install Playwright') {
+            steps {
+                sh 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
+            }
+        }
+        
+        stage('Run Smoke Tests') {
+            steps {
+                echo "🔥 Running: Smoke tests on QA environment"
+                sh """
+                    mvn clean verify \
+                        -Dgroups=${env.TEST_SUITE} \
+                        -Denv=${env.ENVIRONMENT} \
+                        -Dbrowser=${env.BROWSER} \
+                        -Dheadless=${env.HEADLESS}
+                """
+            }
+        }
+        
+        stage('Allure Report') {
+            steps {
+                allure([results: [[path: 'target/allure-results']]])
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "✅ Smoke tests passed - PR can be merged"
+        }
+        failure {
+            echo "❌ Smoke tests failed - PR is blocked"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven-3.9'
+        jdk 'JDK-11'
+    }
+    
+    triggers {
+        // ✅ WHEN: Every night at 2:00 AM
+        cron('0 2 * * *')
+    }
+    
+    environment {
+        ENVIRONMENT = 'staging'    // WHERE: Staging environment
+        BROWSER = 'chromium'
+        HEADLESS = 'true'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "🔧 Starting nightly tests on STAGING..."
+                checkout scm
+            }
+        }
+        
+        stage('Install Playwright') {
+            steps {
+                sh 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
+            }
+        }
+        
+        stage('Run Full Regression on Staging') {
+            steps {
+                echo "🧪 Running: ALL tests on STAGING environment"
+                sh """
+                    mvn clean verify \
+                        -Denv=${env.ENVIRONMENT} \
+                        -Dbrowser=${env.BROWSER} \
+                        -Dheadless=${env.HEADLESS}
+                """
+            }
+        }
+        
+        stage('Allure Report') {
+            steps {
+                allure([results: [[path: 'target/allure-results']]])
+            }
+        }
+    }
+    
+    post {
+        always {
+            emailext(
+                subject: "Nightly STAGING Tests: ${currentBuild.result}",
+                body: """
+                    Environment: STAGING
+                    Build: ${env.BUILD_URL}
+                    Status: ${currentBuild.result}
+                    Allure Report: ${env.BUILD_URL}allure/
+                """,
+                to: 'team@example.com'
+            )
+            cleanWs()
+        }
+    }
+}
