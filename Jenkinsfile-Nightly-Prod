@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven-3.9'
+        jdk 'JDK-11'
+    }
+    
+    triggers {
+        // ✅ WHEN: Every night at 3:00 AM (after staging tests)
+        cron('0 3 * * *')
+    }
+    
+    environment {
+        TEST_SUITE = 'smoke'       // WHICH: Only smoke tests (safer for prod)
+        ENVIRONMENT = 'prod'       // WHERE: Production environment
+        BROWSER = 'chromium'
+        HEADLESS = 'true'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "🚨 Starting production smoke tests..."
+                checkout scm
+            }
+        }
+        
+        stage('Install Playwright') {
+            steps {
+                sh 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
+            }
+        }
+        
+        stage('Run Production Smoke Tests') {
+            steps {
+                echo "🔥 Running: SMOKE tests on PRODUCTION environment"
+                sh """
+                    mvn clean verify \
+                        -Dgroups=${env.TEST_SUITE} \
+                        -Denv=${env.ENVIRONMENT} \
+                        -Dbrowser=${env.BROWSER} \
+                        -Dheadless=${env.HEADLESS}
+                """
+            }
+        }
+        
+        stage('Allure Report') {
+            steps {
+                allure([results: [[path: 'target/allure-results']]])
+            }
+        }
+    }
+    
+    post {
+        failure {
+            // ⚠️ Critical: Production tests failed!
+            emailext(
+                subject: "🚨 URGENT: Production Smoke Tests FAILED",
+                body: """
+                    Environment: PRODUCTION
+                    Build: ${env.BUILD_URL}
+                    Status: FAILURE
+                    Allure Report: ${env.BUILD_URL}allure/
+                    
+                    ACTION REQUIRED: Production may be broken!
+                """,
+                to: 'team@example.com, oncall@example.com'
+            )
+        }
+        success {
+            echo "✅ Production smoke tests passed"
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
