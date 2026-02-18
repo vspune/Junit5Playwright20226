@@ -14,7 +14,11 @@ public class HomePage {
     }
 
     public boolean isLoaded() {
-       return page.url().contains("dashboard");
+       page.waitForLoadState(LoadState.NETWORKIDLE);
+       page.locator(".card-body").first().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+       boolean loaded = page.url().contains("dashboard");
+       System.out.println("✅ Home page check: " + loaded + " | URL: " + page.url());
+       return loaded;
     }
 
     public String getTitle() {
