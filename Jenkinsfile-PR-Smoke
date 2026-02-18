@@ -54,6 +54,7 @@ pipeline {
                         -Denv=${env.ENVIRONMENT} \
                         -Dbrowser=${env.BROWSER} \
                         -Dheadless=${env.HEADLESS}
+                        -Preport
                 """
             }
         }
