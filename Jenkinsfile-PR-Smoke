@@ -19,11 +19,24 @@ pipeline {
     }
     
     stages {
+
         stage('Checkout') {
-            steps {
-                echo "📦 Developer pushed code - Running smoke tests on QA..."
-                checkout scm
+        steps {
+            echo "📦 Developer pushed code - Running smoke tests on QA..."
+            checkout scm
             }
+        }
+       
+        stage('Build') {
+        steps { 
+            bat 'mvn clean compile' 
+            }
+         }
+
+        stage('Install Browsers') {  // ← ADD THIS
+        steps {
+            bat 'npx playwright install'
+        }
         }
         
         stage('Install Playwright') {
