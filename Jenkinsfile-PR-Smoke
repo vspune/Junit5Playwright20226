@@ -28,14 +28,14 @@ pipeline {
         
         stage('Install Playwright') {
             steps {
-                sh 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
+                bat 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
             }
         }
         
         stage('Run Smoke Tests') {
             steps {
                 echo "🔥 Running: Smoke tests on QA environment"
-                sh """
+                bat """
                     mvn clean verify \
                         -Dgroups=${env.TEST_SUITE} \
                         -Denv=${env.ENVIRONMENT} \
