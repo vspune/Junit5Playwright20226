@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import io.qameta.allure.Allure;
 import io.qameta.allure.junit5.AllureJunit5;
+import io.qameta.allure.model.Label;
 
 @ExtendWith(AllureJunit5.class)
 @ExtendWith(TestWatcherExtension.class)
@@ -29,7 +30,12 @@ public abstract class BaseTest {
 
         String browserName = System.getProperty("browser", "chromium");
 
-        Allure.label("browser", browserName);
+        Allure.getLifecycle().updateTestCase(testResult -> {
+            testResult.getLabels().add(
+                new Label().setName("browser").setValue(browserName)
+            );
+        });
+
         Allure.parameter("Browser", browserName);
 
         playwright = Playwright.create();
