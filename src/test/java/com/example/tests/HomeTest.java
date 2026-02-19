@@ -4,6 +4,8 @@ import com.example.pages.HomePage;
 import com.example.pages.LoginPage;
 import com.example.utlis.*;
 
+import io.qameta.allure.Epic;
+
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Tag;
 
 public class HomeTest extends BaseTest {
     @Test
-    @Tag("home")
+    @Tag("HomePage")
+    @Epic("Home Page")
+    
     public void TitleHomeSite() {
     LoginPage login = new LoginPage(page);      // PRECONDITION → reach dashboard
 

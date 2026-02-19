@@ -8,70 +8,105 @@ pipeline {
     }
     
     triggers {
-        // ✅ WHEN: Runs automatically when developer pushes code
         githubPush()
     }
     
     environment {
-        TEST_SUITE = 'Smoke'      // WHICH: Only smoke tests
-        ENVIRONMENT = 'qa'         // WHERE: QA environment
-        BROWSER = 'chromium'
+        ENVIRONMENT = 'qa'
         HEADLESS = 'true'
     }
     
     stages {
-
         stage('Checkout') {
-        steps {
-            echo "📦 Developer pushed code - Running smoke tests on QA..."
-            checkout scm
+            steps {
+                echo "📦 Checking out code..."
+                checkout scm
             }
         }
        
         stage('Build') {
-        steps { 
-            bat 'mvn clean compile' 
+            steps { 
+                echo "🔨 Compiling project..."
+                bat 'mvn clean compile' 
             }
-         }
+        }
 
-        stage('Install Browsers') {  // ← ADD THIS
-        steps {
-            bat 'npx playwright install'
-        }
-        }
-        
         stage('Install Playwright') {
             steps {
+                echo "🎭 Installing Playwright browsers..."
                 bat 'mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"'
             }
         }
         
-        stage('Run Smoke Tests') {
+        // ========================================
+        // ✅ PARALLEL EXECUTION STARTS HERE
+        // ========================================
+        stage('Run Tests in Parallel') {
+            parallel {
+                // ========================================
+                // Stage 1: Login Tests
+                // ========================================
+                stage('Chrome Login , Home Tests') {
+                    steps {
+                        echo "🔐 Running Login tests in PARALLEL..."
+                        bat """
+                            mvn verify ^
+                                -Dgroups="LoginPage | HomePage" ^
+                                -Denv=%ENVIRONMENT% ^
+                                -Dbrowser=chromium ^
+                                -Dheadless=%HEADLESS% ^
+                                -Dallure.results.directory=target/allure-results/chrome
+                        """
+                    }
+                }
+                
+                // ========================================
+                // Stage 2: Home Tests
+                // ========================================
+                stage('FireFox Login , Home Tests') {
+                    steps {
+                        echo "🏠 Running Home tests in PARALLEL..."
+                        bat """
+                            mvn verify ^
+                                -Dgroups="LoginPage | HomePage" ^
+                                -Denv=%ENVIRONMENT% ^
+                                -Dbrowser=firefox ^
+                                -Dheadless=%HEADLESS% ^
+                                -Dallure.results.directory=target/allure-results/firefox
+                        """
+                    }
+                }
+            }
+        }
+        
+        // ========================================
+        // Aggregate Allure Results
+        // ========================================
+        stage('Aggregate Results') {
             steps {
-                echo "🔥 Running: Smoke tests on QA environment"
+                echo "📊 Merging test results from all parallel stages..."
                 bat """
-                    mvn clean verify \
-                        -Dgroups=${env.TEST_SUITE} ^
-                        -Denv=${env.ENVIRONMENT} ^
-                        -Dbrowser=${env.BROWSER} ^
-                        -Dheadless=${env.HEADLESS} ^
-                        -Preport
+                    if not exist target\\allure-results-merged mkdir target\\allure-results-merged
+                    xcopy target\\allure-results\\login\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
+                    xcopy target\\allure-results\\home\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
                 """
             }
         }
-
     }
     
     post {
         success {
-            echo "✅ Smoke tests passed - PR can be merged"
+            echo "✅ All parallel tests passed!"
         }
         failure {
-            echo "❌ Smoke tests failed - PR is blocked"
+            echo "❌ Some tests failed - check Allure report"
         }
         always {
+            echo "📊 Generating Allure report..."
             allure([
-            results: [[path: 'target/allure-results']]
+                includeProperties: false,
+                jdk: '',
+                results: [[path: 'target/allure-results-merged']]
             ])
             cleanWs()
         }

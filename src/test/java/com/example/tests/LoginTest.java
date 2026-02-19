@@ -22,7 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 
-@Tag("Smoke")
+@Tag("LoginPage")
 @Epic("Authentication")
 @Feature("Login")
 public class LoginTest extends BaseTest {
