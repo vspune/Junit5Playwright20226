@@ -82,15 +82,21 @@ pipeline {
         // ========================================
         // Aggregate Allure Results
         // ========================================
-        stage('Aggregate Results') {
-            steps {
-                echo "📊 Merging test results from all parallel stages..."
-                bat """
-                    if not exist target\\allure-results-merged mkdir target\\allure-results-merged
-                    xcopy target\\allure-results\\login\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
-                    xcopy target\\allure-results\\home\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
-                """
-            }
+        // stage('Aggregate Results') {
+        //     steps {
+        //         echo "📊 Merging test results from all parallel stages..."
+        //         bat """
+        //             if not exist target\\allure-results-merged mkdir target\\allure-results-merged
+
+        //             xcopy target\\allure-results\\chrome\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
+        //             xcopy target\\allure-results\\firefox\\*.* target\\allure-results-merged\\ /E /I /Y 2>nul
+        //         """
+        //     }
+        // }
+
+        stage('Publish Allure Report') 
+        { steps 
+        { allure([ includeProperties: false, jdk: '', results: [[path: 'target/allure-results']] ]) 
         }
     }
     
