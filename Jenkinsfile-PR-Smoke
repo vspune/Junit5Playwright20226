@@ -55,7 +55,7 @@ pipeline {
                                 -Denv=%ENVIRONMENT% ^
                                 -Dbrowser=chromium ^
                                 -Dheadless=%HEADLESS% ^
-                                -Dallure.results.directory=target/allure-results/chrome
+                                -Dallure.results.directory=target/allure-results
                         """
                     }
                 }
@@ -72,13 +72,13 @@ pipeline {
                                 -Denv=%ENVIRONMENT% ^
                                 -Dbrowser=firefox ^
                                 -Dheadless=%HEADLESS% ^
-                                -Dallure.results.directory=target/allure-results/firefox
+                                -Dallure.results.directory=target/allure-results
                         """
                     }
                 }
             }
-        }
-        
+        }  
+    }  
         // ========================================
         // Aggregate Allure Results
         // ========================================
@@ -94,11 +94,8 @@ pipeline {
         //     }
         // }
 
-        stage('Publish Allure Report') 
-        { steps 
-        { allure([ includeProperties: false, jdk: '', results: [[path: 'target/allure-results']] ]) 
-        }
-    }
+       
+    
     
     post {
         success {
@@ -112,7 +109,7 @@ pipeline {
             allure([
                 includeProperties: false,
                 jdk: '',
-                results: [[path: 'target/allure-results-merged']]
+                results: [[path: 'target/allure-results']]
             ])
             cleanWs()
         }

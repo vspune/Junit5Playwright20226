@@ -6,6 +6,8 @@ import com.example.utlis.*;
 import com.microsoft.playwright.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import io.qameta.allure.Allure;
 import io.qameta.allure.junit5.AllureJunit5;
 
 @ExtendWith(AllureJunit5.class)
@@ -26,6 +28,10 @@ public abstract class BaseTest {
         System.out.println("========================================");
 
         String browserName = System.getProperty("browser", "chromium");
+
+        Allure.label("browser", browserName);
+        Allure.parameter("Browser", browserName);
+
         playwright = Playwright.create();
 
         BrowserType browserType;
